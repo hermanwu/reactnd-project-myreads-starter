@@ -45,8 +45,6 @@ class ListBooks extends Component {
         }
       </ol>
     )
-
-
   }
 }
 
