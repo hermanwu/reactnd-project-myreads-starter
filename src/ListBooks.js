@@ -13,13 +13,9 @@ class ListBooks extends Component {
 
     return (
       <ol className="books-grid">
-        {          
-          books.filter((book) => { 
-            if (shelf === 'none') {
-                return book;
-            } else if ( book.shelf === shelf) {
-                return book;
-            }
+        {
+          books.filter((book) => {
+            return shelf === 'none' || (book.shelf === shelf);
           }).map((book) => (
             <li key={book.id}>
               <div className="book">
@@ -27,10 +23,12 @@ class ListBooks extends Component {
                   <div className="book-cover"
                     style={{
                       width: 128, height: 188,
-                      backgroundImage: `url(${book.imageLinks.smallThumbnail})`
+                      backgroundImage: `url(${book.imageLinks ? 
+                        book.imageLinks.smallThumbnail : undefined})`
                     }}></div>
                   <div className="book-shelf-changer">
-                    <select value={book.shelf} onChange={(event) => onUpdateShelf(event, book)}>
+                    <select value={book.shelf}
+                      onChange={(event) => onUpdateShelf(event, book)}>
                       <option value="" disabled>Move to...</option>
                       <option value="currentlyReading">Currently Reading</option>
                       <option value="wantToRead">Want to Read</option>

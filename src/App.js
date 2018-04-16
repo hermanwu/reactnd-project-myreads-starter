@@ -31,22 +31,28 @@ class BooksApp extends React.Component {
     const newShelf = event.target.value;
 
     this.setState((state) => {
-      books: state.books.map((b) => {
-        if (b.id === book.id) {
-          b.shelf = newShelf;
-        }
-        return b;
-      })
+      let tmp;
+
+      if (state.books.some(b => b.id === book.id)) {
+        tmp = state.books.map((b) => {
+          if (b.id === book.id) {
+            b.shelf = newShelf;
+          }
+          return b;
+        });
+      } else {
+        // new books;
+        tmp = state.books.concat(book);
+      }
+
+      return {
+        books: tmp
+      }
     })
 
     BooksAPI.update(book, newShelf);
   }
 
-  searchBooks = (query) => {
-    BooksAPI.search(query).then((result) => {
-        console.log(result);
-    })
-  }
 
   render() {
     return (
@@ -80,7 +86,7 @@ class BooksApp extends React.Component {
                     <ListBooks books={this.state.books}
                       shelf='read'
                       onUpdateShelf={this.updateShelf}></ListBooks>
-                  </div> 
+                  </div>
                 </div>
               </div>
             </div>
@@ -93,7 +99,8 @@ class BooksApp extends React.Component {
         )} />
 
         <Route path='/search' render={({ history }) => (
-            <SearchPage books={this.state.books}></SearchPage>
+          <SearchPage books={this.state.books}
+            onUpdateShelf={this.updateShelf}></SearchPage>
         )} />
 
       </div>

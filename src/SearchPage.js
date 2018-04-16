@@ -10,6 +10,7 @@ import * as BooksAPI from './BooksAPI';
 class SearchPage extends Component {
   static propTypes = {
     books: PropTypes.array.isRequired,
+    onUpdateShelf: PropTypes.func.isRequired,
   }
 
   state = {
@@ -18,24 +19,27 @@ class SearchPage extends Component {
   }
 
   searchBooks = (query) => {
-    debugger;
     const trimedQuery = query.trim();
 
     this.setState({ query: trimedQuery });
 
-      return BooksAPI.search(trimedQuery).then((results) => {
+    if (!trimedQuery) {
+      this.setState({ searchResults: [] });
+    } else {
+      BooksAPI.search(trimedQuery).then((results) => {
         if (Array.isArray(results)) {
           const ownedBooks = this.props.books;
 
           results = results.map(book => {
 
-            book.shelf = 'none';
+            const tmp = ownedBooks.filter(ownedBook => book.id === ownedBook.id);
 
-            const tmp = ownedBooks.filter(ownedBook => book.id == ownedBook.id);
-            
             if (tmp.length > 0) {
-                book.shelf = tmp[0].shelf;
-            } 
+              book.shelf = tmp[0].shelf;
+            } else {
+              book.shelf = 'none';
+            }
+
             return book;
           });
 
@@ -44,22 +48,26 @@ class SearchPage extends Component {
           this.setState({ searchResults: [] });
         }
       });
-
+    }
   }
 
-  updateShelf = (event, book) => {
+  onUpdateSearchShelf = (event, book) => {
     const newShelf = event.target.value;
 
+    // Update search shelf;
     this.setState((state) => {
-      books: state.books.map((b) => {
-        if (b.id === book.id) {
-          b.shelf = newShelf;
-        }
-        return b;
-      })
+      return {
+        searchResults: state.searchResults.map((sr) => {
+          if (sr.id === book.id) {
+            sr.shelf = newShelf;
+          }
+          return sr;
+        })
+      }
     })
 
-    BooksAPI.update(book, newShelf);
+    // Update own shelf;
+    this.props.onUpdateShelf(event, book);
   }
 
   render() {
@@ -79,13 +87,11 @@ class SearchPage extends Component {
         <div className="search-books-results">
           <ListBooks books={searchResults}
             shelf='none'
-            onUpdateShelf={this.updateShelf}>
+            onUpdateShelf={this.onUpdateSearchShelf}>
           </ListBooks>
         </div>
       </div>
     )
-
-
   }
 }
 
