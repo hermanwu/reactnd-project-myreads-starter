@@ -9,6 +9,7 @@ import * as BooksAPI from './BooksAPI';
 
 class SearchPage extends Component {
   static propTypes = {
+    books: PropTypes.array.isRequired,
   }
 
   state = {
@@ -17,28 +18,33 @@ class SearchPage extends Component {
   }
 
   searchBooks = (query) => {
+    debugger;
     const trimedQuery = query.trim();
 
     this.setState({ query: trimedQuery });
 
-    if (trimedQuery) {
       return BooksAPI.search(trimedQuery).then((results) => {
         if (Array.isArray(results)) {
-          this.setState({ searchResults: results});
+          const ownedBooks = this.props.books;
+
+          results = results.map(book => {
+
+            book.shelf = 'none';
+
+            const tmp = ownedBooks.filter(ownedBook => book.id == ownedBook.id);
+            
+            if (tmp.length > 0) {
+                book.shelf = tmp[0].shelf;
+            } 
+            return book;
+          });
+
+          this.setState({ searchResults: results });
         } else {
-          this.setState({ searchResults: []});
+          this.setState({ searchResults: [] });
         }
       });
-    }
-  }
 
-  updateQuery = (query) => {
-    const trimedQuery = query.trim();
-    if (this.state.query != trimedQuery) {
-      debugger;
-      this.setState({ query: trimedQuery });
-      this.searchBooks(trimedQuery);
-    }
   }
 
   updateShelf = (event, book) => {
